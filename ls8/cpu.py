@@ -7,6 +7,14 @@ class CPU:
 
     def __init__(self):
         """Construct a new CPU."""
+        self.ram = [0] * 256
+        self.reg = [0] * 8
+        self.pc = 0
+    
+    def ram_read(self, address):
+        
+
+    def ram_write(self, pc):
         pass
 
     def load(self):
@@ -28,6 +36,7 @@ class CPU:
 
         for instruction in program:
             self.ram[address] = instruction
+            print("This is instruction: ", instruction)
             address += 1
 
 
@@ -63,3 +72,4 @@ class CPU:
     def run(self):
         """Run the CPU."""
         pass
+
