@@ -13,6 +13,7 @@ class CPU:
         self.LDI = 0b10000010
         self.PRN = 0b01000111
         self.HLT = 0b00000001
+        self.MUL = 0b10100010
     
     def ram_read(self, address):
         return self.ram[address]
@@ -20,26 +21,26 @@ class CPU:
     def ram_write(self, value, address):
         self.ram[address] = value
 
-    def load(self):
+    def load(self, program):
         """Load a program into memory."""
 
-        address = 0
 
-        # For now, we've just hardcoded a program:
+        # address = 0
 
-        program = [
-            # From print8.ls8
-            0b10000010, # LDI R0,8
-            0b00000000,
-            0b00001000,
-            0b01000111, # PRN R0
-            0b00000000,
-            0b00000001, # HLT
-        ]
+        # # For now, we've just hardcoded a program:
 
-        for instruction in program:
+        # program = [
+        #     # From print8.ls8
+        #     0b10000010, # LDI R0,8
+        #     0b00000000,
+        #     0b00001000,
+        #     0b01000111, # PRN R0
+        #     0b00000000,
+        #     0b00000001, # HLT
+        # ]
+
+        for address, instruction in enumerate(program):
             self.ram[address] = instruction
-            print("This is instruction: ", instruction)
             address += 1
 
 
@@ -49,6 +50,8 @@ class CPU:
         if op == "ADD":
             self.reg[reg_a] += self.reg[reg_b]
         #elif op == "SUB": etc
+        elif op == "MUL":
+            self.reg[reg_a] *= self.reg[reg_b]
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -83,12 +86,19 @@ class CPU:
             
             if instruction_register == self.LDI:
                 self.ldi()
+            
+            elif instruction_register == self.MUL:
+                self.mul()
 
             elif instruction_register == self.PRN:
                 self.prn()
 
             elif instruction_register == self.HLT:
                 running = self.hlt()
+
+            else: 
+                print(f'Unknown instructions {ir} at address {self.pc}')
+                sys.exit(1)
                 
 
     def ldi(self):
@@ -97,12 +107,19 @@ class CPU:
         self.reg[address] = value
         self.pc += 3
 
+    def mul(self):
+        reg_a = 0
+        reg_b = 1
+        self.alu("MUL", reg_a, reg_b)
+        self.pc += 3
+
     def prn(self):
-        address = self.reg[self.pc + 1]
+        address = self.ram[self.pc + 1]
+        print("RAM: ", self.ram)
+        print("REG: ", self.reg)
         print(self.reg[address])
         self.pc += 2
 
     def hlt(self):
         self.pc += 1
         return False
-
