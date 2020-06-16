@@ -10,12 +10,15 @@ class CPU:
         self.ram = [0] * 256
         self.reg = [0] * 8
         self.pc = 0
+        self.LDI = 0b10000010
+        self.PRN = 0b01000111
+        self.HLT = 0b00000001
     
     def ram_read(self, address):
-        
+        return self.ram[address]
 
-    def ram_write(self, pc):
-        pass
+    def ram_write(self, value, address):
+        self.ram[address] = value
 
     def load(self):
         """Load a program into memory."""
@@ -71,5 +74,35 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-        pass
+        # Read the memory address stored in register[pc]
+        # Store result in 'IR', the instruction register (can be a local variable in run())
+        running = True
+
+        while running:
+            instruction_register = self.ram[self.pc]
+            
+            if instruction_register == self.LDI:
+                self.ldi()
+
+            elif instruction_register == self.PRN:
+                self.prn()
+
+            elif instruction_register == self.HLT:
+                running = self.hlt()
+                
+
+    def ldi(self):
+        address = self.ram[self.pc + 1]
+        value = self.ram[self.pc + 2]
+        self.reg[address] = value
+        self.pc += 3
+
+    def prn(self):
+        address = self.reg[self.pc + 1]
+        print(self.reg[address])
+        self.pc += 2
+
+    def hlt(self):
+        self.pc += 1
+        return False
 
