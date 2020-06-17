@@ -59,7 +59,7 @@ Memory map:
 | F7  Reserved          |
 | F6  Reserved          |
 | F5  Reserved          |
-| F4  Key pressed       |    Holds the most recent key pressed on the keyboard
+| F4  Key pressed       |    Holds most recent key pressed on keyboard
 | F3  Start of Stack    |
 | F2  [more stack]      |    Stack grows down
 | ...                   |
@@ -71,8 +71,7 @@ Memory map:
 
 ## Stack
 
-The SP points at the value at the top of the stack (most recently pushed), or at
-address `F4` if the stack is empty.
+The SP points at the value at the top of the stack (most recently pushed), or at address `F4` if the stack is empty.
 
 
 ## Interrupts

@@ -10,10 +10,14 @@ class CPU:
         self.ram = [0] * 256
         self.reg = [0] * 8
         self.pc = 0
+        self.sp = 7
+        self.running = False
         self.LDI = 0b10000010
         self.PRN = 0b01000111
         self.HLT = 0b00000001
         self.MUL = 0b10100010
+        self.PUSH = 0b01000101
+        self.POP = 0b01000110
     
     def ram_read(self, address):
         return self.ram[address]
@@ -23,21 +27,6 @@ class CPU:
 
     def load(self, program):
         """Load a program into memory."""
-
-
-        # address = 0
-
-        # # For now, we've just hardcoded a program:
-
-        # program = [
-        #     # From print8.ls8
-        #     0b10000010, # LDI R0,8
-        #     0b00000000,
-        #     0b00001000,
-        #     0b01000111, # PRN R0
-        #     0b00000000,
-        #     0b00000001, # HLT
-        # ]
 
         for address, instruction in enumerate(program):
             self.ram[address] = instruction
@@ -79,25 +68,27 @@ class CPU:
         """Run the CPU."""
         # Read the memory address stored in register[pc]
         # Store result in 'IR', the instruction register (can be a local variable in run())
-        running = True
 
-        while running:
-            instruction_register = self.ram[self.pc]
-            
-            if instruction_register == self.LDI:
-                self.ldi()
-            
-            elif instruction_register == self.MUL:
-                self.mul()
+        branch_table = {
+            self.LDI : self.ldi,
+            self.MUL : self.mul,
+            self.PRN : self.prn,
+            self.HLT : self.hlt,
+            self.PUSH: self.push,
+            self.POP : self.pop
+        }
 
-            elif instruction_register == self.PRN:
-                self.prn()
 
-            elif instruction_register == self.HLT:
-                running = self.hlt()
+        self.running = True
+        self.reg[self.sp] = 0xF4
+        print("R7: ", self.reg[self.sp])
 
-            else: 
-                print(f'Unknown instructions {ir} at address {self.pc}')
+        while self.running:
+            ir = self.ram[self.pc]
+            if ir in branch_table:
+                branch_table[ir]()
+            elif ir not in branch_table:
+                print(f'Unknown instruction {bin(ir)} at address {self.pc}')
                 sys.exit(1)
                 
 
@@ -112,14 +103,30 @@ class CPU:
         reg_b = 1
         self.alu("MUL", reg_a, reg_b)
         self.pc += 3
+    
+    def push(self):
+        self.reg[self.sp] -= 1
+        address = self.ram[self.pc + 1]
+        value = self.reg[address]
+        top_of_stack_addr = self.reg[self.sp]
+        self.ram[top_of_stack_addr] = value
+        self.pc += 2
+
+    def pop(self):
+        top_of_stack_address = self.reg[self.sp]
+        reg_address = self.ram[self.pc + 1]
+        self.reg[reg_address] = self.ram[top_of_stack_address]
+        self.reg[self.sp] += 1
+        self.pc += 2
 
     def prn(self):
         address = self.ram[self.pc + 1]
+        value = self.reg[address]
         print("RAM: ", self.ram)
         print("REG: ", self.reg)
-        print(self.reg[address])
+        print("Value", value)
         self.pc += 2
 
     def hlt(self):
         self.pc += 1
-        return False
+        self.running = False

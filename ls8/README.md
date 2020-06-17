@@ -290,16 +290,12 @@ c.run()
 
 ## Step 10: Implement System Stack
 
-All CPUs manage a _stack_ that can be used to store information temporarily.
-This stack resides in main memory and typically starts at the top of memory (at
-a high address) and grows _downward_ as things are pushed on. The LS-8 is no
-exception to this.
+All CPUs manage a _stack_ that can be used to store information temporarily. This stack resides in main memory and typically starts at the top of memory (at a high address) and grows _downward_ as things are pushed on. The LS-8 is no exception to this.
 
-Implement a system stack per the spec. Add `PUSH` and `POP` instructions. Read
-  the beginning of the spec to see which register is the stack pointer. 
+Implement a system stack per the spec. Add `PUSH` and `POP` instructions. Read the beginning of the spec to see which register is the stack pointer. 
   
 * Values themselves should be saved in the ***portion of RAM*** _that is allocated for the stack_. 
-  -  Use the stack pointer to modify the correct block of memory. 
+  - Use the stack pointer to modify the correct block of memory. 
   - Make sure you update the stack pointer appropriately as you `PUSH` and `POP` items to and from the stack.
 
 If you run `python3 ls8.py examples/stack.ls8` you should see the output:
