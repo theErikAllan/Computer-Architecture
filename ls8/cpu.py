@@ -15,9 +15,12 @@ class CPU:
         self.LDI = 0b10000010
         self.PRN = 0b01000111
         self.HLT = 0b00000001
+        self.ADD = 0b10100000
         self.MUL = 0b10100010
         self.PUSH = 0b01000101
         self.POP = 0b01000110
+        self.CALL = 0b01010000
+        self.RET = 0b00010001
     
     def ram_read(self, address):
         return self.ram[address]
@@ -71,11 +74,14 @@ class CPU:
 
         branch_table = {
             self.LDI : self.ldi,
+            self.ADD : self.add,
             self.MUL : self.mul,
             self.PRN : self.prn,
             self.HLT : self.hlt,
             self.PUSH: self.push,
-            self.POP : self.pop
+            self.POP : self.pop,
+            self.CALL: self.call,
+            self.RET : self.ret
         }
 
 
@@ -96,6 +102,13 @@ class CPU:
         address = self.ram[self.pc + 1]
         value = self.ram[self.pc + 2]
         self.reg[address] = value
+        # print("State of RAM: ", self.ram)
+        self.pc += 3
+    
+    def add(self):
+        reg_a = 0
+        reg_b = 0
+        self.alu("ADD", reg_a, reg_b)
         self.pc += 3
 
     def mul(self):
@@ -118,6 +131,29 @@ class CPU:
         self.reg[reg_address] = self.ram[top_of_stack_address]
         self.reg[self.sp] += 1
         self.pc += 2
+
+    def call(self):
+        # Calls a subroutine at the address stored in the register
+        # 1. The address of the instruction directly after CALL is pushed onto the stack. This allows us to return to where we left off when the subroutine finishes executing.
+        return_pc = self.pc + 2
+
+        # Set value in the stack to the PC value we want to return to after we call the function
+        self.reg[self.sp] -= 1
+        top_of_stack_address = self.reg[self.sp]
+        self.ram[top_of_stack_address] = return_pc
+
+        # 2. The PC is set to the address stored in the given register. We jump to that location in RAM and execute the first instruction in the subroutine. The PC can move forward or backward from its current location.
+        
+        subroutine_pc = self.reg[1]
+        self.pc = subroutine_pc
+    
+    def ret(self):
+        # Return from subroutine
+        # Pop the value from the top of the stack and store it in the PC
+        print("REG: ", self.reg)
+        top_of_stack_address = self.reg[self.sp]
+        return_pc = self.ram[top_of_stack_address]
+        self.pc = return_pc
 
     def prn(self):
         address = self.ram[self.pc + 1]

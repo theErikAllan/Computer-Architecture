@@ -308,33 +308,19 @@ If you run `python3 ls8.py examples/stack.ls8` you should see the output:
 
 ## Step 11: Implement Subroutine Calls
 
-Back in the old days, functions were called _subroutines_. In machine code,
-subroutines enable you to jump to any address with the `CALL` instruction, and
-then return back to where you called from with the `RET` instruction. This
-enables you to create reusable functions.
+Back in the old days, functions were called _subroutines_. In machine code, subroutines enable you to jump to any address with the `CALL` instruction, and then return back to where you called from with the `RET` instruction. This enables you to create reusable functions.
 
-Subroutines have many similarities to functions in higher-level languages. Just
-as a function in C, JavaScript or Python will jump from the function call, to
-its definition, and then return back to the line of code following the call,
-subroutines will also allow us to execute instructions non-sequentially. 
+Subroutines have many similarities to functions in higher-level languages. Just as a function in C, JavaScript or Python will jump from the function call, to its definition, and then return back to the line of code following the call, subroutines will also allow us to execute instructions non-sequentially. 
 
-The stack is used to hold the return address used by `RET`, so you **must**
-implement the stack in step 10, first. Then, add subroutine instructions `CALL`
-and `RET`.
+The stack is used to hold the return address used by `RET`, so you **must** implement the stack in step 10, first. Then, add subroutine instructions `CALL` and `RET`.
 
 * For `CALL`, you will likely have to modify your handler call in `cpu_run()`.
-  The problem is that some instructions want to execute and move to the next
-  instruction like normal, but others, like `CALL` and `JMP` want to go to a
-  specific address.
+  
+  The problem is that some instructions want to execute and move to the next instruction like normal, but others, like `CALL` and `JMP` want to go to a specific address.
 
-  > Note: `CALL` is very similar to the `JMP` instruction. However, there is one
-  > key difference between them. Can you find it in the specs? 
+  > Note: `CALL` is very similar to the `JMP` instruction. However, there is one key difference between them. Can you find it in the specs? 
 
-  * In **any** case where the instruction handler sets the `PC` directly, you
-    _don't_ want to advance the PC to the next instruction. So you'll have to
-    set up a special case for those types of instructions. This can be a flag
-    you explicitly set per-instruction... but can also be computed from the
-    value in `IR`. Check out the spec for more.
+  * In **any** case where the instruction handler sets the `PC` directly, you _don't_ want to advance the PC to the next instruction. So you'll have to set up a special case for those types of instructions. This can be a flag you explicitly set per-instruction... but can also be computed from the value in `IR`. Check out the spec for more.
 
 If you run `python3 ls8.py examples/call.ls8` you should see the output:
 
