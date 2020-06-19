@@ -9,9 +9,15 @@ class CPU:
         """Construct a new CPU."""
         self.ram = [0] * 256
         self.reg = [0] * 8
+
+        # PC: Program Counter, address of the currently executing instruction
         self.pc = 0
         self.sp = 7
         self.running = False
+
+        # The flags register `FL` holds the current flags status. These flags can change based on the operands given to the `CMP` opcode.
+        self.fl = 0b00000000
+
         self.LDI = 0b10000010
         self.PRN = 0b01000111
         self.HLT = 0b00000001
@@ -21,6 +27,10 @@ class CPU:
         self.POP = 0b01000110
         self.CALL = 0b01010000
         self.RET = 0b00010001
+        self.CMP = 0b10100111
+        self.JNE = 0b01010110
+        self.JEQ = 0b01010101
+        self.JMP = 0b01010100
     
     def ram_read(self, address):
         return self.ram[address]
@@ -44,6 +54,15 @@ class CPU:
         #elif op == "SUB": etc
         elif op == "MUL":
             self.reg[reg_a] *= self.reg[reg_b]
+        # We write a conditional statement for CMP
+        elif op == "CMP":
+            # And in the statement we check the flag
+            if self.reg[reg_a] < self.reg[reg_b]:
+                self.fl = 0b00000100
+            elif self.reg[reg_a] > self.reg[reg_b]:
+                self.fl = 0b00000010
+            else:
+                self.fl = 0b00000001
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -81,7 +100,11 @@ class CPU:
             self.PUSH: self.push,
             self.POP : self.pop,
             self.CALL: self.call,
-            self.RET : self.ret
+            self.RET : self.ret,
+            self.CMP : self.comp,
+            self.JEQ : self.jeq,
+            self.JNE : self.jne,
+            self.JMP : self.jmp
         }
 
 
@@ -103,6 +126,12 @@ class CPU:
         value = self.ram[self.pc + 2]
         self.reg[address] = value
         # print("State of RAM: ", self.ram)
+        self.pc += 3
+
+    def comp(self):
+        reg_a = 0
+        reg_b = 1
+        self.alu("CMP", reg_a, reg_b)
         self.pc += 3
     
     def add(self):
@@ -134,17 +163,22 @@ class CPU:
 
     def call(self):
         # Calls a subroutine at the address stored in the register
-        # 1. The address of the instruction directly after CALL is pushed onto the stack. This allows us to return to where we left off when the subroutine finishes executing.
+
+        # First, we create a variable and point it to (self.pc + 2), which represents the place in the program where we want to return to after our subroutine is executed
         return_pc = self.pc + 2
 
-        # Set value in the stack to the PC value we want to return to after we call the function
+        # Then we decrement the stack pointer in R7 to the new head of the stack
         self.reg[self.sp] -= 1
+        # We create a variable and point it to the value in R7 to represent the address in RAM of the top of the stack
         top_of_stack_address = self.reg[self.sp]
+        # And then we storeat the top of the stack the PC value we want to return to 
         self.ram[top_of_stack_address] = return_pc
 
-        # 2. The PC is set to the address stored in the given register. We jump to that location in RAM and execute the first instruction in the subroutine. The PC can move forward or backward from its current location.
-        
-        subroutine_pc = self.reg[1]
+        # Next, we create a variable for the register address of the subroutine we want to run 
+        reg_address_of_subroutine = self.ram[self.pc + 1]
+        # We create another variable and point it to the register address containing the PC of the subroutine we want to run
+        subroutine_pc = self.reg[reg_address_of_subroutine]
+        # Finally, we set self.pc to point to the PC of the subroutine we want to run so the computer will jump to that location in the program
         self.pc = subroutine_pc
     
     def ret(self):
@@ -166,3 +200,22 @@ class CPU:
     def hlt(self):
         self.pc += 1
         self.running = False
+
+    def jmp(self):
+        # Jump to the address stored in the given register
+        reg_address = self.ram[self.pc + 1]
+        self.pc = self.reg[reg_address]
+
+    def jeq(self):
+        if self.fl == 1:
+            reg_address = self.ram[self.pc + 1]
+            self.pc = self.reg[reg_address]
+        else:
+            self.pc += 2
+
+    def jne(self):
+        if self.fl != 1:
+            reg_address = self.ram[self.pc + 1]
+            self.pc = self.reg[reg_address]
+        else:
+            self.pc += 2
