@@ -71,8 +71,7 @@ Memory map:
 
 ## Stack
 
-The SP points at the value at the top of the stack (most recently pushed), or at
-address `F4` if the stack is empty.
+The SP points at the value at the top of the stack (most recently pushed), or at address `F4` if the stack is empty.
 
 
 ## Interrupts
@@ -126,10 +125,8 @@ Subsequently, the program can be loaded into RAM starting at address `0x00`.
 
 ## Execution Sequence
 
-1. The instruction pointed to by the `PC` is fetched from RAM, decoded, and
-   executed.
-2. If the instruction does _not_ set the `PC` itself, the `PC` is advanced to
-   point to the subsequent instruction.
+1. The instruction pointed to by the `PC` is fetched from RAM, decoded, and executed.
+2. If the instruction does _not_ set the `PC` itself, the `PC` is advanced to point to the subsequent instruction.
 3. If the CPU is not halted by a `HLT` instruction, go to step 1.
 
 Some instructions set the PC directly. These are:
@@ -146,8 +143,7 @@ Some instructions set the PC directly. These are:
 * JLE
 * RET
 
-In these cases, the `PC` does not automatically advance to the next instruction,
-since it was set explicitly.
+In these cases, the `PC` does not automatically advance to the next instruction, since it was set explicitly.
 
 ## Instruction Layout
 
@@ -158,12 +154,9 @@ Meanings of the bits in the first byte of each instruction: `AABCDDDD`
 * `C` 1 if this instruction sets the PC
 * `DDDD` Instruction identifier
 
-The number of operands `AA` is useful to know because the total number of bytes in any
-instruction is the number of operands + 1 (for the opcode). This
-allows you to know how far to advance the `PC` with each instruction.
+The number of operands `AA` is useful to know because the total number of bytes in any instruction is the number of operands + 1 (for the opcode). This allows you to know how far to advance the `PC` with each instruction.
 
-It might also be useful to check the other bits in an emulator implementation, but
-there are other ways to code it that don't do these checks.
+It might also be useful to check the other bits in an emulator implementation, but there are other ways to code it that don't do these checks.
 
 ## Instruction Set
 
@@ -199,8 +192,7 @@ A0 0a 0b
 
 `AND registerA registerB`
 
-Bitwise-AND the values in registerA and registerB, then store the result in
-registerA.
+Bitwise-AND the values in registerA and registerB, then store the result in registerA.
 
 Machine code:
 ```
@@ -214,8 +206,7 @@ A8 0a 0b
 
 Calls a subroutine (function) at the address stored in the register.
 
-1. The address of the ***instruction*** _directly after_ `CALL` is
-   pushed onto the stack. This allows us to return to where we left off when the subroutine finishes executing.
+1. The address of the ***instruction*** _directly after_ `CALL` is pushed onto the stack. This allows us to return to where we left off when the subroutine finishes executing.
 2. The PC is set to the address stored in the given register. We jump to that location in RAM and execute the first instruction in the subroutine. The PC can move forward or backwards from its current location.
 
 Machine code:
@@ -354,8 +345,7 @@ Machine code:
 
 `JGE register`
 
-If `greater-than` flag or `equal` flag is set (true), jump to the address stored
-in the given register.
+If `greater-than` flag or `equal` flag is set (true), jump to the address stored in the given register.
 
 ```
 01011010 00000rrr
@@ -366,8 +356,7 @@ in the given register.
 
 `JGT register`
 
-If `greater-than` flag is set (true), jump to the address stored in the given
-register.
+If `greater-than` flag is set (true), jump to the address stored in the given register.
 
 Machine code:
 ```
@@ -379,8 +368,7 @@ Machine code:
 
 `JLE register`
 
-If `less-than` flag or `equal` flag is set (true), jump to the address stored in the given
-register.
+If `less-than` flag or `equal` flag is set (true), jump to the address stored in the given register.
 
 ```
 01011001 00000rrr
@@ -517,8 +505,7 @@ Machine code:
 
 `OR registerA registerB`
 
-Perform a bitwise-OR between the values in registerA and registerB, storing the
-result in registerA.
+Perform a bitwise-OR between the values in registerA and registerB, storing the result in registerA.
 
 Machine code:
 ```
@@ -605,8 +592,7 @@ Machine Code:
 
 *This is an instruction handled by the ALU.*
 
-Shift the value in registerA left by the number of bits specified in registerB,
-filling the low bits with 0.
+Shift the value in registerA left by the number of bits specified in registerB,  filling the low bits with 0.
 
 ```
 10101100 00000aaa 00000bbb
@@ -617,8 +603,7 @@ AC 0a 0b
 
 *This is an instruction handled by the ALU.*
 
-Shift the value in registerA right by the number of bits specified in registerB,
-filling the high bits with 0.
+Shift the value in registerA right by the number of bits specified in registerB, filling the high bits with 0.
 
 ```
 10101101 00000aaa 00000bbb
@@ -660,8 +645,7 @@ A1 0a 0b
 
 `XOR registerA registerB`
 
-Perform a bitwise-XOR between the values in registerA and registerB, storing the
-result in registerA.
+Perform a bitwise-XOR between the values in registerA and registerB, storing the result in registerA.
 
 Machine code:
 ```
