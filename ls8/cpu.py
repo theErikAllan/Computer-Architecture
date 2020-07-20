@@ -10,6 +10,10 @@ class CPU:
         self.ram = [None] * 256
         self.reg = [None] * 8
         self.pc = 0
+        self.sp = 7
+        self.LDI = 0b10000010
+        self.PRN = 0b01000111
+        self.HLT = 0b00000001
 
     def load(self):
         """Load a program into memory."""
@@ -44,8 +48,7 @@ class CPU:
 
     def trace(self):
         """
-        Handy function to print out the CPU state. You might want to call this
-        from run() if you need help debugging.
+        Handy function to print out the CPU state. You might want to call this from run() if you need help debugging.
         """
 
         print(f"TRACE: %02X | %02X %02X %02X |" % (
@@ -63,11 +66,47 @@ class CPU:
         print()
     
     def ram_read(self, address):
-        pass
+        return self.ram[address]
 
-    def ram_write(self, value):
-        pass
+    def ram_write(self, address, value):
+        self.ram[address] = value
 
     def run(self):
         """Run the CPU."""
-        pass
+        running = True
+        # First, we set the stack pointer in the register to point to address F3 in ram, which is reserved for the start of the stack
+        self.reg[self.sp] = 0xF3
+
+        while running:
+            # We retrieve the program instruction from ram
+            instruction_register = self.ram[self.pc]
+            # Next, we create a list of conditionals checking if the program or space assigned to program
+            if instruction_register == self.LDI:
+                self.ldi()
+            elif instruction_register == self.PRN:
+                self.prn()
+            elif instruction_register == self.HLT:
+                running = self.hlt()
+
+    def ldi(self):
+        # First, we grab the register address that we'll be storing a value in
+        reg_address = self.ram[self.pc + 1]
+        # Then we grab the value
+        value = self.ram[self.pc + 2]
+        # And store the value in the designated register
+        self.reg[reg_address] = value
+        # Lastly, we increment the program counter so it moves on to the next instruction
+        self.pc += 3
+
+    def prn(self):
+        # Print numeric value stored in the given register
+        # First, we get the register address from ram
+        reg_address = self.ram[self.pc + 1]
+        # Then we access the register address and print the value contained within
+        value = self.reg[reg_address]
+        print(value)
+        self.pc += 2
+
+    def hlt(self):
+        self.pc += 1
+        return False

@@ -8,9 +8,7 @@
 * R6 is reserved as the interrupt status (IS)
 * R7 is reserved as the stack pointer (SP)
 
-> These registers only hold values between 0-255. After performing math on
-> registers in the emulator, bitwise-AND the result with 0xFF (255) to keep the
-> register values in that range.
+> These registers only hold values between 0-255. After performing math on registers in the emulator, bitwise-AND the result with 0xFF (255) to keep the register values in that range.
 
 
 ## Internal Registers
@@ -31,12 +29,9 @@ The register is made up of 8 bits. If a particular bit is set, that flag is "tru
 
 `FL` bits: `00000LGE`
 
-* `L` Less-than: during a `CMP`, set to 1 if registerA is less than registerB,
-  zero otherwise.
-* `G` Greater-than: during a `CMP`, set to 1 if registerA is greater than
-  registerB, zero otherwise.
-* `E` Equal: during a `CMP`, set to 1 if registerA is equal to registerB, zero
-  otherwise.
+* `L` Less-than: during a `CMP`, set to 1 if registerA is less than registerB, zero otherwise.
+* `G` Greater-than: during a `CMP`, set to 1 if registerA is greater than registerB, zero otherwise.
+* `E` Equal: during a `CMP`, set to 1 if registerA is equal to registerB, zero otherwise.
 
 
 ## Memory
@@ -78,17 +73,13 @@ The SP points at the value at the top of the stack (most recently pushed), or at
 
 There are 8 interrupts, I0-I7.
 
-When an interrupt occurs from an external source or from an `INT`
-instruction, the appropriate bit in the IS register will be set.
+When an interrupt occurs from an external source or from an `INT` instruction, the appropriate bit in the IS register will be set.
 
 Prior to instruction fetch, the following steps occur:
 
-1. The IM register is bitwise AND-ed with the IS register and the
-   results stored as `maskedInterrupts`.
-2. Each bit of `maskedInterrupts` is checked, starting from 0 and going
-   up to the 7th bit, one for each interrupt.
-3. If a bit is found to be set, follow the next sequence of steps. Stop
-   further checking of `maskedInterrupts`.
+1. The IM register is bitwise AND-ed with the IS register and the results stored as `maskedInterrupts`.
+2. Each bit of `maskedInterrupts` is checked, starting from 0 and going up to the 7th bit, one for each interrupt.
+3. If a bit is found to be set, follow the next sequence of steps. Stop further checking of `maskedInterrupts`.
 
 If a bit is set:
 
@@ -97,20 +88,17 @@ If a bit is set:
 3. The `PC` register is pushed on the stack.
 4. The `FL` register is pushed on the stack.
 5. Registers R0-R6 are pushed on the stack in that order.
-6. The address (_vector_ in interrupt terminology) of the appropriate
-   handler is looked up from the interrupt vector table.
+6. The address (_vector_ in interrupt terminology) of the appropriate handler is looked up from the interrupt vector table.
 7. Set the PC is set to the handler address.
 
-While an interrupt is being serviced (between the handler being called
-and the `IRET`), further interrupts are disabled.
+While an interrupt is being serviced (between the handler being called and the `IRET`), further interrupts are disabled.
 
 See `IRET`, below, for returning from an interrupt.
 
 ### Interrupt numbers
 
 * 0: Timer interrupt. This interrupt triggers once per second.
-* 1: Keyboard interrupt. This interrupt triggers when a key is pressed.
-  The value of the key pressed is stored in address `0xF4`.
+* 1: Keyboard interrupt. This interrupt triggers when a key is pressed. The value of the key pressed is stored in address `0xF4`.
 
 ## Power on State
 
@@ -225,11 +213,9 @@ Compare the values in two registers.
 
 * If they are equal, set the Equal `E` flag to 1, otherwise set it to 0.
 
-* If registerA is less than registerB, set the Less-than `L` flag to 1,
-  otherwise set it to 0.
+* If registerA is less than registerB, set the Less-than `L` flag to 1, otherwise set it to 0.
 
-* If registerA is greater than registerB, set the Greater-than `G` flag
-  to 1, otherwise set it to 0.
+* If registerA is greater than registerB, set the Greater-than `G` flag to 1, otherwise set it to 0.
 
 Machine code:
 ```
@@ -257,11 +243,9 @@ Machine code:
 
 `DIV registerA registerB`
 
-Divide the value in the first register by the value in the second,
-storing the result in registerA.
+Divide the value in the first register by the value in the second, storing the result in registerA.
 
-If the value in the second register is 0, the system should print an
-error message and halt.
+If the value in the second register is 0, the system should print an error message and halt.
 
 Machine code:
 ```

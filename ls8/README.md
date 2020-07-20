@@ -148,8 +148,7 @@ sys.argv[1] == "examples/mult.ls8"
 
 so you can look in `sys.argv[1]` for the name of the file to load.
 
-> Bonus: check to make sure the user has put a command line argument where you
-> expect, and print an error and exit if they didn't.
+> Bonus: check to make sure the user has put a command line argument where you expect, and print an error and exit if they didn't.
 
 In `load()`, you will now want to use those command line arguments to open a file, read in its contents line by line, and save appropriate data into RAM. 
 
@@ -190,17 +189,13 @@ One you run it with `python3 ls8.py examples/mult.ls8`, you should see:
 
 Check the LS-8 spec for what the `MUL` instruction does.
 
-> Note: `MUL` is the responsiblity of the ALU, so it would be nice if your code
-> eventually called the `alu()` function with appropriate arguments to get the
-> work done.
+> Note: `MUL` is the responsiblity of the ALU, so it would be nice if your code eventually called the `alu()` function with appropriate arguments to get the work done.
 
 ## Step 9: Beautify your `run()` loop
 
 Do you have a big `if-elif` block in your `cpu_run()` function? Is there a way to better modularize your code? There are plenty of them!
 
-> What is the time complexity of the `if-elif` cascade? In the worst case, we're
-> going to have to check the value in `IR` against all of the possible opcode
-> values. This is `O(n)`. It would be a lot better if it we an `O(1)` process...
+> What is the time complexity of the `if-elif` cascade? In the worst case, we're going to have to check the value in `IR` against all of the possible opcode values. This is `O(n)`. It would be a lot better if it we an `O(1)` process...
 
 One option is to use something called a _branch table_ or _dispatch table_ to simplify the instruction handler dispatch code. This is a list or dictionary of functions that you can index by opcode value. The upshot is that you fetch the instruction value from RAM, then use that value to look up the handler function in the branch table. Then call it.
 
@@ -262,14 +257,11 @@ Subroutines have many similarities to functions in higher-level languages. Just 
 
 The stack is used to hold the return address used by `RET`, so you **must** implement the stack in step 10, first. Then, add subroutine instructions `CALL` and `RET`.
 
-* For `CALL`, you will likely have to modify your handler call in `cpu_run()`.
-  The problem is that some instructions want to execute and move to the next instruction like normal, but others, like `CALL` and `JMP` want to go to a specific address.
+* For `CALL`, you will likely have to modify your handler call in `cpu_run()`. The problem is that some instructions want to execute and move to the next instruction like normal, but others, like `CALL` and `JMP` want to go to a specific address.
 
-  > Note: `CALL` is very similar to the `JMP` instruction. However, there is one
-  > key difference between them. Can you find it in the specs? 
+  > Note: `CALL` is very similar to the `JMP` instruction. However, there is one key difference between them. Can you find it in the specs? 
 
-  * In **any** case where the instruction handler sets the `PC` directly, you
-    _don't_ want to advance the PC to the next instruction. So you'll have to set up a special case for those types of instructions. This can be a flag you explicitly set per-instruction... but can also be computed from the value in `IR`. Check out the spec for more.
+  * In **any** case where the instruction handler sets the `PC` directly, you _don't_ want to advance the PC to the next instruction. So you'll have to set up a special case for those types of instructions. This can be a flag you explicitly set per-instruction... but can also be computed from the value in `IR`. Check out the spec for more.
 
 If you run `python3 ls8.py examples/call.ls8` you should see the output:
 
