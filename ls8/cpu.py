@@ -14,23 +14,12 @@ class CPU:
         self.LDI = 0b10000010
         self.PRN = 0b01000111
         self.HLT = 0b00000001
+        self.MUL = 0b10100010
 
-    def load(self):
+    def load(self, program):
         """Load a program into memory."""
 
         address = 0
-
-        # For now, we've just hardcoded a program:
-
-        program = [
-            # From print8.ls8
-            0b10000010, # LDI R0,8
-            0b00000000,
-            0b00001000,
-            0b01000111, # PRN R0
-            0b00000000,
-            0b00000001, # HLT
-        ]
 
         for instruction in program:
             self.ram[address] = instruction
@@ -43,6 +32,8 @@ class CPU:
         if op == "ADD":
             self.reg[reg_a] += self.reg[reg_b]
         #elif op == "SUB": etc
+        elif op =="MUL":
+            self.reg[reg_a] *= self.reg[reg_b]
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -87,15 +78,24 @@ class CPU:
                 self.prn()
             elif instruction_register == self.HLT:
                 running = self.hlt()
+            elif instruction_register == self.MUL:
+                self.mul()
 
     def ldi(self):
         # First, we grab the register address that we'll be storing a value in
         reg_address = self.ram[self.pc + 1]
         # Then we grab the value
-        value = self.ram[self.pc + 2]
+        value = self.ram_read(self.pc + 2)
         # And store the value in the designated register
         self.reg[reg_address] = value
         # Lastly, we increment the program counter so it moves on to the next instruction
+        self.pc += 3
+
+    def mul(self):
+        # Multiply the values in regA and regB
+        regA = self.ram_read(self.pc + 1)
+        regB = self.ram_read(self.pc + 2)
+        self.alu("MUL", regA, regB)
         self.pc += 3
 
     def prn(self):
