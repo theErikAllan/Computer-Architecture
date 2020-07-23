@@ -7,6 +7,10 @@ from cpu import *
 
 program = []
 
+if len(sys.argv) < 2:
+    print("GIVE ME A BETTER FILE. YOU'RE USELESS.")
+    exit()
+
 filepath = sys.argv[1]
 
 with open(filepath) as banana:
