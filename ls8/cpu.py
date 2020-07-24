@@ -12,15 +12,27 @@ class CPU:
         self.pc = 0
         self.sp = 7
         self.running = False
+        self.flag = None
         self.ADD  = 0b10100000
+        self.AND  = 0b10101000
         self.CALL = 0b01010000
+        self.CMP  = 0b10100111
         self.LDI  = 0b10000010
-        self.PRN  = 0b01000111
         self.HLT  = 0b00000001
+        self.JEQ  = 0b01010101
+        self.JMP  = 0b01010100
+        self.JNE  = 0b01010110
         self.MUL  = 0b10100010
-        self.PUSH = 0b01000101
+        self.NOT  = 0b01101001
+        self.OR   = 0b10101010
         self.POP  = 0b01000110
+        self.PRN  = 0b01000111
+        self.PUSH = 0b01000101
         self.RET  = 0b00010001
+        self.SHL  = 0b10101100
+        self.SHR  = 0b10101101
+        self.MOD  = 0b10100100
+        self.XOR  = 0b10101011
 
     def load(self, program):
         """Load a program into memory."""
@@ -37,8 +49,29 @@ class CPU:
 
         if op == "ADD":
             self.reg[reg_a] += self.reg[reg_b]
-        elif op =="MUL":
+        elif op == "MUL":
             self.reg[reg_a] *= self.reg[reg_b]
+        elif op == "AND":
+            self.reg[reg_a] &= self.reg[reg_b]
+        elif op == "MOD":
+            self.reg[reg_a] %= self.reg[reg_b]
+        elif op == "NOT":
+            self.reg[reg_a] = ~self.reg[reg_b]
+        elif op == "OR":
+            self.reg[reg_a] |= self.reg[reg_b]
+        elif op == "SHL":
+            self.reg[reg_a] << self.reg[reg_b]
+        elif op == "SHR":
+            self.reg[reg_a] >> self.reg[reg_b]
+        elif op == "XOR":
+            self.reg[reg_a] ^= self.reg[reg_b]
+        elif op == "CMP":
+            if self.reg[reg_a] < self.reg[reg_b]:
+                self.flag = 0b00000100
+            elif self.reg[reg_a] > self.reg[reg_b]:
+                self.flag = 0b00000010
+            elif self.reg[reg_a] == self.reg[reg_b]:
+                self.flag = 0b00000001
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -75,14 +108,22 @@ class CPU:
 
         branch_table = {
             self.ADD  : self.add,
+            self.AND  : self.and_bw,
             self.CALL : self.call,
-            self.LDI  : self.ldi,
-            self.PRN  : self.prn,
+            self.CMP  : self.comp,
             self.HLT  : self.hlt,
+            self.JEQ  : self.jeq,
+            self.JMP  : self.jmp,
+            self.JNE  : self.jne,
+            self.LDI  : self.ldi,
             self.MUL  : self.mul,
-            self.PUSH : self.push,
+            self.NOT  : self.not_bw,
+            self.OR   : self.or_bw,
             self.POP  : self.pop,
-            self.RET  : self.ret
+            self.PRN  : self.prn,
+            self.PUSH : self.push,
+            self.RET  : self.ret,
+            self.XOR  : self.xor_bw,
         }
 
         while self.running:
@@ -99,9 +140,15 @@ class CPU:
     
     def add(self):
         # Add the values in regA and regB
-        regA = self.ram_read(self.pc + 1)
-        regB = self.ram_read(self.pc + 2)
-        self.alu("ADD", regA, regB)
+        reg_a = self.ram_read(self.pc + 1)
+        reg_b = self.ram_read(self.pc + 2)
+        self.alu("ADD", reg_a, reg_b)
+        self.pc += 3
+
+    def and_bw(self):
+        reg_a = self.ram_read(self.pc + 1)
+        reg_b = self.ram_read(self.pc + 2)
+        self.alu("AND", reg_a, reg_b)
         self.pc += 3
     
     def call(self):
@@ -117,10 +164,40 @@ class CPU:
         # The program counter is set to the address stored in the given register
         reg_address = self.ram_read(self.pc + 1)
         self.pc = self.reg[reg_address]
+    
+    def comp(self):
+        reg_a = self.ram_read(self.pc + 1)
+        reg_b = self.ram_read(self.pc + 2)
+        self.alu("CMP", reg_a, reg_b)
+        self.pc += 3
 
     def hlt(self):
         self.pc += 1
         self.running = False
+    
+    def jeq(self):
+        # If "equal" flag is true, jump to the address stored in the given register
+        if self.flag == 0b00000001:
+            reg_address = self.ram_read(self.pc + 1)
+            new_pc = self.reg[reg_address]
+            self.pc = new_pc
+        else:
+            self.pc += 2
+    
+    def jmp(self):
+        # Jump to the address stored in the given register by setting the program counter to said address
+        reg_address = self.ram_read(self.pc + 1)
+        new_pc = self.reg[reg_address]
+        self.pc = new_pc
+    
+    def jne(self):
+        # If "equal" flag is false, jump to the address stored in the given register
+        if self.flag != 0b00000001:
+            reg_address = self.ram_read(self.pc + 1)
+            new_pc = self.reg[reg_address]
+            self.pc = new_pc
+        else:
+            self.pc += 2
 
     def ldi(self):
         # First, we grab the register address that we'll be storing a value in
@@ -134,9 +211,20 @@ class CPU:
 
     def mul(self):
         # Multiply the values in regA and regB
-        regA = self.ram_read(self.pc + 1)
-        regB = self.ram_read(self.pc + 2)
-        self.alu("MUL", regA, regB)
+        reg_a = self.ram_read(self.pc + 1)
+        reg_b = self.ram_read(self.pc + 2)
+        self.alu("MUL", reg_a, reg_b)
+        self.pc += 3
+    
+    def not_bw(self):
+        reg_a = self.ram_read(self.pc + 1)
+        self.alu("NOT", reg_a, reg_a)
+        self.pc += 2
+    
+    def or_bw(self):
+        reg_a = self.ram_read(self.pc + 1)
+        reg_b = self.ram_read(self.pc + 2)
+        self.alu("OR", reg_a, reg_b)
         self.pc += 3
     
     def pop(self):
@@ -179,3 +267,21 @@ class CPU:
         # Increment the stack pointer to account for popping off the top of the stack
         self.reg[self.sp] += 1
         self.pc = pc_to_return_to
+    
+    def shl(self):
+        reg_a = self.ram_read(self.pc + 1)
+        reg_b = self.ram_read(self.pc + 2)
+        self.alu("SHL", reg_a, reg_b)
+        self.pc += 3
+
+    def shr(self):
+        reg_a = self.ram_read(self.pc + 1)
+        reg_b = self.ram_read(self.pc + 2)
+        self.alu("SHR", reg_a, reg_b)
+        self.pc += 3
+    
+    def xor_bw(self):
+        reg_a = self.ram_read(self.pc + 1)
+        reg_b = self.ram_read(self.pc + 2)
+        self.alu("XOR", reg_a, reg_b)
+        self.pc += 3
